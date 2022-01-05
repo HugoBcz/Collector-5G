@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Collector 5G</string>
+    <string name="switch_to_start_stop_service">Switch to start/stop service</string>
+    <string name="start_stop_service">Start/stop service</string>
+</resources>
