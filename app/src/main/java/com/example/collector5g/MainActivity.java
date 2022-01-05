@@ -22,9 +22,13 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
-                serviceIntent.setAction("start collecting service");
-                startService(serviceIntent);
+                //Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
+                //serviceIntent.setAction("start collecting service");
+                //startService(serviceIntent);
+
+                Intent dataIntent = new Intent(getApplicationContext(), DataCollectionService.class);
+                dataIntent.setAction("start 5g service");
+                startService(dataIntent);
 
                 //Intent locationIntent = new Intent(getApplicationContext(), CollectingService.class);
                 //locationIntent.setAction("start location service");
@@ -38,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
                 Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
                 serviceIntent.setAction("stop collecting service");
                 stopService(serviceIntent);
+
+                Intent dataIntent = new Intent(getApplicationContext(), DataCollectionService.class);
+                dataIntent.setAction("stop 5g service");
+                stopService(dataIntent);
 
                 //Intent locationIntent = new Intent(getApplicationContext(), CollectingService.class);
                 //locationIntent.setAction("stop location service");
