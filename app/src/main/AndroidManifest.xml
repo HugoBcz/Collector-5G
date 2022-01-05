@@ -28,6 +28,9 @@
             <intent-filter>
                 <action android:name="start 5g service" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="stop 5g service" />
+            </intent-filter>
         </service>
         <service
             android:name=".CollectingService"

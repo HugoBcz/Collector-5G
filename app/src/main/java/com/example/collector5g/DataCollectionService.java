@@ -6,13 +6,27 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.os.IBinder;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import java.util.List;
 
 public class DataCollectionService extends Service {
+
+    public static final String
+            ACTION_NETWORK_TYPE_BROADCAST = DataCollectionService.class.getName() + "NetworkTypeBroadcast";
+
+    //final Handler handler = new Handler();
+    //final  int delay = 5000;
+
     public DataCollectionService() {
     }
 
@@ -24,33 +38,74 @@ public class DataCollectionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String networkType = networkType();
-        Log.i("NETWORK TYPE", networkType);
+
+        TelephonyManager teleMan = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        String network = null;
+        int cellSig = 0;
+        int cellCqi = 0;
+        int cellRsrp = 0;
+        int cellRsrq = 0;
+
+        @SuppressLint("MissingPermission")
+        List<CellInfo> cellInfoList = teleMan.getAllCellInfo();
+
+        try {
+            for (CellInfo cellInfo : cellInfoList) {
+                if (cellInfo instanceof CellInfoLte) {
+                    Log.i("NETWORK TYPE", "OK");
+                    network = "Réseau 4G";
+                    cellSig = ((CellInfoLte) cellInfo).getCellSignalStrength().getDbm();
+                    cellCqi = ((CellInfoLte) cellInfo).getCellSignalStrength().getCqi();
+                    cellRsrp = ((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp();
+                    cellRsrq = ((CellInfoLte) cellInfo).getCellSignalStrength().getRsrq();
+                }
+            }
+        } catch (Exception e) {
+            Log.d("NETWORK TYPE","++++++" + e);
+        }
+
+        //Log.i("NETWORK TYPE", network);
+
+        Intent i = new Intent(ACTION_NETWORK_TYPE_BROADCAST);
+        i.putExtra("NETWORKTYPE", network);
+        i.putExtra("CQI", String.valueOf(cellCqi));
+        i.putExtra("RSRP", String.valueOf(cellRsrp));
+        i.putExtra("RSRQ", String.valueOf(cellRsrq));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+
+        /*handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                @SuppressLint("MissingPermission")
+                List<CellInfo> cellInfoList = teleMan.getAllCellInfo();
+                String network = null;
+                int cellSig = 0;
+
+                try {
+                    for (CellInfo cellInfo : cellInfoList) {
+                        if (cellInfo instanceof CellInfoLte) {
+                            network = "Réseau 4G";
+                            cellSig = ((CellInfoLte) cellInfo).getCellSignalStrength().getDbm();
+                            Log.i("NETWORK TYPE", String.valueOf(cellSig));
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.d("NETWORK TYPE","++++++" + e);
+                }
+
+                //Log.i("NETWORK TYPE", network);
+
+                Intent i = new Intent(ACTION_NETWORK_TYPE_BROADCAST);
+                i.putExtra("NETWORKTYPE", network + " with Signal Strengh : " + String.valueOf(cellSig));
+                LocalBroadcastManager.getInstance(DataCollectionService.this).sendBroadcast(i);
+                handler.postDelayed(this, delay);
+            }
+        }, delay);*/
+
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private String networkType() {
-        TelephonyManager teleMan = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        @SuppressLint("MissingPermission")
-        int networkType = teleMan.getDataNetworkType();
-        switch (networkType) {
-            case TelephonyManager.NETWORK_TYPE_1xRTT: return "1xRTT";
-            case TelephonyManager.NETWORK_TYPE_CDMA: return "CDMA";
-            case TelephonyManager.NETWORK_TYPE_EDGE: return "EDGE";
-            case TelephonyManager.NETWORK_TYPE_EHRPD: return "eHRPD";
-            case TelephonyManager.NETWORK_TYPE_EVDO_0: return "EVDO rev. 0";
-            case TelephonyManager.NETWORK_TYPE_EVDO_A: return "EVDO rev. A";
-            case TelephonyManager.NETWORK_TYPE_EVDO_B: return "EVDO rev. B";
-            case TelephonyManager.NETWORK_TYPE_GPRS: return "GPRS";
-            case TelephonyManager.NETWORK_TYPE_HSDPA: return "HSDPA";
-            case TelephonyManager.NETWORK_TYPE_HSPA: return "HSPA";
-            case TelephonyManager.NETWORK_TYPE_HSPAP: return "HSPA+";
-            case TelephonyManager.NETWORK_TYPE_HSUPA: return "HSUPA";
-            case TelephonyManager.NETWORK_TYPE_IDEN: return "iDen";
-            case TelephonyManager.NETWORK_TYPE_LTE: return "LTE";
-            case TelephonyManager.NETWORK_TYPE_UMTS: return "UMTS";
-            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown";
-        }
-        throw new RuntimeException("New type of network");
+    public void onDestroy() {
+        super.onDestroy();
     }
 }

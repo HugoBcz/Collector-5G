@@ -1,13 +1,19 @@
 package com.example.collector5g;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,6 +24,25 @@ public class MainActivity extends AppCompatActivity {
 
         Button startButton = findViewById(R.id.startButton);
         Button stopButton = findViewById(R.id.stopButton);
+        TextView networkType = findViewById(R.id.networkType);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        String network = intent.getStringExtra("NETWORKTYPE");
+                        String cqi = intent.getStringExtra("CQI");
+                        String rsrp = intent.getStringExtra("RSRP");
+                        String rsrq = intent.getStringExtra("RSRQ");
+
+                        Log.i("HOME","CQI :" + cqi);
+                        Log.i("HOME","RSRP :" + rsrp);
+                        Log.i("HOME","RSRQ :" + rsrq);
+
+                        networkType.setText(network);
+                    }
+                }, new IntentFilter(DataCollectionService.ACTION_NETWORK_TYPE_BROADCAST)
+        );
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
-                serviceIntent.setAction("stop collecting service");
-                stopService(serviceIntent);
+                //Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
+                //serviceIntent.setAction("stop collecting service");
+                //stopService(serviceIntent);
 
                 Intent dataIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 dataIntent.setAction("stop 5g service");
