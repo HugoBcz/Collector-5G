@@ -26,16 +26,8 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="start collecting service" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".LocationService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="start location service" />
-            </intent-filter>
+                <action android:name="stop collecting service" />
+             </intent-filter>
         </service>
 
         <activity
