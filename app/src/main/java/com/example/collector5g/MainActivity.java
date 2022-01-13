@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         accel_y = findViewById(R.id.accel_y);
         accel_z = findViewById(R.id.accel_z);
 
+        Location = findViewById(R.id.Location);
         latitude =  findViewById(R.id.latitude);
         longitude = findViewById(R.id.longitude);
         altitude = findViewById(R.id.altitude);
