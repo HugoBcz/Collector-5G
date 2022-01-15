@@ -1,12 +1,16 @@
 package com.example.collector5g;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import static android.os.Build.MANUFACTURER;
+import static android.os.Build.MODEL;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.Manifest;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,83 +19,106 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import org.w3c.dom.Text;
+
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
+
+    //device info
+    TextView dn;
+    TextView dm;
+    TextView dv;
+
+    //location
+    static TextView Location;
+    static TextView latitude;
+    static TextView longitude;
+    static TextView altitude;
+
+
+    //mobility accelerometer
+    static TextView accel_data;
+    static TextView accel_x;
+    static TextView accel_y;
+    static TextView accel_z;
+
+    //mobility gyroscope
+    static TextView gyros_data;
+    static TextView gyros_x;
+    static TextView gyros_y;
+    static TextView gyros_z;
+
+    //battery display
+    static TextView battery;
+
+    //5G Collection
+    static TextView networkType;
+    static TextView cqiView;
+    static TextView rsrpView;
+    static TextView rsrqView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initComponent();
+        getDeviceÌnfo();
+
         Button startButton = findViewById(R.id.startButton);
         Button stopButton = findViewById(R.id.stopButton);
-        TextView networkType = findViewById(R.id.networkType);
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        String network = intent.getStringExtra("NETWORKTYPE");
-                        String cqi = intent.getStringExtra("CQI");
-                        String rsrp = intent.getStringExtra("RSRP");
-                        String rsrq = intent.getStringExtra("RSRQ");
-
-                        Log.i("HOME","CQI :" + cqi);
-                        Log.i("HOME","RSRP :" + rsrp);
-                        Log.i("HOME","RSRQ :" + rsrq);
-
-                        networkType.setText(network);
-                    }
-                }, new IntentFilter(DataCollectionService.ACTION_NETWORK_TYPE_BROADCAST)
-        );
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
-                //serviceIntent.setAction("start collecting service");
-                //startService(serviceIntent);
+                Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
+                serviceIntent.setAction("start collecting service");
+                startService(serviceIntent);
 
-                Intent dataIntent = new Intent(getApplicationContext(), DataCollectionService.class);
-                dataIntent.setAction("start 5g service");
-                startService(dataIntent);
-
-                //Intent locationIntent = new Intent(getApplicationContext(), CollectingService.class);
-                //locationIntent.setAction("start location service");
-                //startService(locationIntent);
             }
         });
 
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
-                //serviceIntent.setAction("stop collecting service");
-                //stopService(serviceIntent);
-
-                Intent dataIntent = new Intent(getApplicationContext(), DataCollectionService.class);
-                dataIntent.setAction("stop 5g service");
-                stopService(dataIntent);
-
-                //Intent locationIntent = new Intent(getApplicationContext(), CollectingService.class);
-                //locationIntent.setAction("stop location service");
-                //stopService(locationIntent);
+                Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
+                serviceIntent.setAction("stop collecting service");
+                stopService(serviceIntent);
             }
         });
-
-
-        /*Switch switch1 = (Switch) findViewById(R.id.switch1);
-        switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // start our service
-                Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
-                serviceIntent.setAction("start collecting service");
-                startService(serviceIntent);
-
-                Intent locationIntent = new Intent(getApplicationContext(), CollectingService.class);
-                locationIntent.setAction("start location service");
-                startService(locationIntent);
-            }
-        }) ;*/
     }
+
+    private void initComponent() {
+        accel_data = findViewById(R.id.accel_data);
+        accel_x = findViewById(R.id.accel_x);
+        accel_y = findViewById(R.id.accel_y);
+        accel_z = findViewById(R.id.accel_z);
+
+        latitude =  findViewById(R.id.latitude);
+        longitude = findViewById(R.id.longitude);
+        altitude = findViewById(R.id.altitude);
+
+        dn = (TextView) findViewById(R.id.dn);
+        dm = (TextView) findViewById(R.id.dm);
+        dv = (TextView) findViewById(R.id.dv);
+
+        battery = (TextView) findViewById(R.id.battery);
+
+        networkType = (TextView) findViewById(R.id.networkType);
+        cqiView = (TextView) findViewById(R.id.cqiView);
+        rsrpView = (TextView) findViewById(R.id.rsrpView);
+        rsrqView = (TextView) findViewById(R.id.rsrqView);
+    }
+
+    private void getDeviceÌnfo() {
+        dn.setText(MANUFACTURER);
+        dm.setText(MODEL);
+        dv.setText("Android " + Build.VERSION.RELEASE);
+    }
+
 }

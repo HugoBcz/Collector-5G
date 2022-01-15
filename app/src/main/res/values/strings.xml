@@ -2,4 +2,18 @@
     <string name="app_name">Collector 5G</string>
     <string name="switch_to_start_stop_service">Switch to start/stop service</string>
     <string name="start_stop_service">Start/stop service</string>
+    <string name="gyroscope_z" />
+    <string name="gyroscope_x" />
+    <string name="gyroscope_y" />
+    <string name="gyroscope_data" />
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="device_manufacturer" />
+    <string name="device_model" />
+    <string name="android_version" />
+    <string name="battery_level" />
+    <string name="accelerometer_data" />
+    <string name="accelerometer_z" />
+    <string name="accelerometer_x" />
+    <string name="accelerometer_y" />
 </resources>
