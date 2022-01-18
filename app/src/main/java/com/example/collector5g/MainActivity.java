@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity {
     static TextView gyros_y;
     static TextView gyros_z;
 
+    //network data
+    static TextView networkData;
+    static TextView rsrp;
+    static TextView rsrq;
+    static TextView networkType;
+
     //battery display
     static TextView battery;
 
@@ -92,6 +98,11 @@ public class MainActivity extends AppCompatActivity {
         accel_x = findViewById(R.id.accel_x);
         accel_y = findViewById(R.id.accel_y);
         accel_z = findViewById(R.id.accel_z);
+
+        networkData = findViewById(R.id.networkData);
+        networkType = findViewById(R.id.networkType);
+        rsrp = findViewById(R.id.rsrp);
+        rsrq = findViewById(R.id.rsrq);
 
         Location = findViewById(R.id.Location);
         latitude =  findViewById(R.id.latitude);

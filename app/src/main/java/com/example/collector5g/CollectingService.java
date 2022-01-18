@@ -7,11 +7,7 @@ import static android.os.Build.MODEL;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -21,30 +17,35 @@ import android.hardware.Sensor;
 
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 
 import android.location.Location;
+
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.BatteryManager;
 
-import android.os.Build;
+
 import android.os.IBinder;
 
+import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoNr;
+import android.telephony.CellSignalStrength;
+import android.telephony.CellSignalStrengthNr;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
+
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
+
 
 
 public class CollectingService extends Service {
@@ -88,6 +89,8 @@ public class CollectingService extends Service {
         getBatteryLevel();
         MainActivity.accel_data.setText("Accelerometer data : in progress...");
         MainActivity.Location.setText("Location : in progress...");
+        MainActivity.networkData.setText("Network data : in progress...");
+
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -99,9 +102,75 @@ public class CollectingService extends Service {
 
         MainActivity.accel_data.setText("Accelerometer data : stopped");
         MainActivity.Location.setText("Location : stopped");
+        MainActivity.networkData.setText("Network data : stopped");
+
         super.onDestroy();
     }
 
+    public void getCellSignalInfo() {
+        String network = null;
+        int cellSigLte = 0;
+        int cellCqiLte = 0;
+        int cellRsrpLte = 0;
+        int cellRsrqLte = 0;
+
+        int csiRsrp = 0;
+        int csiRsrq = 0;
+        int ssRsrp = 0;
+        int ssRsrq = 0;
+        List<Integer> cqiReport = new ArrayList<Integer>();
+
+        TelephonyManager teleMan = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        @SuppressLint("MissingPermission") List<CellInfo> cellInfoList = teleMan.getAllCellInfo();
+
+        try {
+            Log.i("NETWORKTYPE", "NR3");
+            Log.i("TAG",cellInfoList.toString());
+            for (CellInfo cellInfo : cellInfoList) {
+                if (cellInfo instanceof CellInfoLte) {
+                    Log.i("NETWORKTYPE", "LTE");
+                    network = "Réseau 4G";
+                    cellSigLte = ((CellInfoLte) cellInfo).getCellSignalStrength().getDbm();
+                    cellCqiLte = ((CellInfoLte) cellInfo).getCellSignalStrength().getCqi();
+                    cellRsrpLte = ((CellInfoLte) cellInfo).getCellSignalStrength().getRsrp();
+                    cellRsrqLte = ((CellInfoLte) cellInfo).getCellSignalStrength().getRsrq();
+
+                    MainActivity.networkType.setText("4G Network");
+                    //MainActivity.cqi.setText("CQI : " + cellCqiLte);
+                    MainActivity.rsrp.setText("RSRP : " + cellRsrpLte);
+                    MainActivity.rsrq.setText("RSRQ : " + cellRsrqLte);
+                }
+                Log.i("NETWORKTYPE", "NR2");
+                if (cellInfo instanceof CellInfoNr) {
+                    Log.i("NETWORKTYPE", "NR");
+                    CellSignalStrength cellSigNr = ((CellInfoNr) cellInfo).getCellSignalStrength();
+                    if (cellSigNr instanceof CellSignalStrengthNr) {
+                        csiRsrp = ((CellSignalStrengthNr) cellSigNr).getCsiRsrp();
+                        csiRsrq = ((CellSignalStrengthNr) cellSigNr).getCsiRsrq();
+                        ssRsrp = ((CellSignalStrengthNr) cellSigNr).getSsRsrp();
+                        ssRsrq = ((CellSignalStrengthNr) cellSigNr).getSsRsrq();
+
+                        MainActivity.networkType.setText("5G Network");
+                        MainActivity.rsrp.setText("RSRP : CSI = " + csiRsrp + " ; SS = " + ssRsrp);
+                        MainActivity.rsrq.setText("RSRQ : CSI = " + csiRsrq + " ; SS = " + ssRsrq);
+                    }
+                }
+
+                else {
+                    MainActivity.networkType.setText("You are not connected to a 4G or 5G network");
+                }
+            }
+        } catch (Exception e) {
+            Log.d("NETWORK TYPE", "++++++" + e);
+        }
+
+
+        /*handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+            }
+        }, delay);*/
+    }
 
     public void getMobility() {
 
@@ -190,8 +259,12 @@ public class CollectingService extends Service {
     }
 
 
+    @SuppressLint("MissingPermission")
     private void getLocation() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+
+       // mFusedLocationClient.requestLocationUpdates(LocationServices.getFusedLocationProviderClient(getApplicationContext()), 0, 0, mFusedLocationClient.registerListener(myListener));
+
 
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -201,11 +274,14 @@ public class CollectingService extends Service {
                     @Override
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
-
-                        MainActivity.latitude.setText("Latitude : " + location.getLatitude() + " °N");
-                        MainActivity.longitude.setText("Longitude : " + location.getLongitude() + " °E");
-                        MainActivity.altitude.setText("Altitude : " + (int) (Math.round(location.getAltitude() * 100)) / 100.0 + " meters");
-
+                        if (location != null) {
+                            MainActivity.latitude.setText("Latitude : " + location.getLatitude() + " °N");
+                            MainActivity.longitude.setText("Longitude : " + location.getLongitude() + " °E");
+                            MainActivity.altitude.setText("Altitude : " + (int) (Math.round(location.getAltitude() * 100)) / 100.0 + " meters");
+                        }
+                        else {
+                            MainActivity.Location.setText("Location : no last known location found");
+                        }
                     }
                 });
     }

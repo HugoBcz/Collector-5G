@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="gyros_z" type="id" />
+    <item name="gyros_y" type="id" />
+    <item name="gyros_x" type="id" />
+    <item name="gyros_data" type="id" />
+    <item name="accel_z" type="id" />
+    <item name="latitude" type="id" />
+    <item name="longitude" type="id" />
+    <item name="Location" type="id" />
+    <item name="altitude" type="id" />
+    <item name="accel_data" type="id" />
+    <item name="dn" type="id" />
+    <item name="dm" type="id" />
+    <item name="dv" type="id" />
+    <item name="battery" type="id" />
+    <item name="accel_x" type="id" />
+    <item name="accel_y" type="id" />
+    <item name="networkType" type="id" />
+    <item name="rsrp" type="id" />
+    <item name="rsrq" type="id" />
+</resources>

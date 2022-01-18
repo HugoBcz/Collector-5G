@@ -21,6 +21,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Collector5G">
 
+
         <service
             android:name=".CollectingService"
             android:enabled="true"
