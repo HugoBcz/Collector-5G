@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     //battery display
     static TextView battery;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -43,6 +43,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,9 +86,12 @@ public class CollectingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("STATUS", "service started");
+        /*
         getLocation();
         getMobility();
         getBatteryLevel();
+        */
+        getAllData();
         MainActivity.accel_data.setText("Accelerometer data : in progress...");
         MainActivity.Location.setText("Location : in progress...");
         MainActivity.networkData.setText("Network data : in progress...");
@@ -105,6 +110,61 @@ public class CollectingService extends Service {
         MainActivity.networkData.setText("Network data : stopped");
 
         super.onDestroy();
+    }
+    public void getAllData(){
+
+        // get battery level
+        BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);
+        int batteryPercentage = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        //Log.i("BATTERY LEVEL", "" + batteryPercentage + "%");
+        MainActivity.battery.setText("BATTERY LEVEL: " + batteryPercentage + "%");
+
+
+        // get location
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            long locationTime = location.getTime();
+                            MainActivity.latitude.setText("Latitude : " + location.getLatitude() + " °N");
+                            MainActivity.longitude.setText("Longitude : " + location.getLongitude() + " °E");
+                            MainActivity.altitude.setText("Altitude : " + (int) (Math.round(location.getAltitude() * 100)) / 100.0 + " meters");
+                        }
+                        else {
+                            MainActivity.Location.setText("Location : no last known location found");
+                        }
+                    }
+                });
+
+
+        // get mobility
+        myAccelerometerListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (event != null) {
+                    long eventStamp = event.timestamp;
+                    MainActivity.accel_x.setText(String.format("%.2f", event.values[0]));
+                    MainActivity.accel_y.setText(String.format("%.2f", event.values[1]));
+                    MainActivity.accel_z.setText(String.format("%.2f", event.values[2]));
+                }
+            }
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+        };
+        mySensorManager.registerListener(myAccelerometerListener, myAccelerometer, 500);
+
+
+        // get network data
+        // put the proper function here
+
     }
 
     public void getCellSignalInfo() {
@@ -172,8 +232,8 @@ public class CollectingService extends Service {
         }, delay);*/
     }
 
+    /*
     public void getMobility() {
-
         myAccelerometerListener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
@@ -183,15 +243,12 @@ public class CollectingService extends Service {
                         MainActivity.accel_z.setText(String.format("%.2f", event.values[2]));
                     }
                 }
-
                 @Override
                 public void onAccuracyChanged(Sensor sensor, int accuracy) {
                 }
             };
             mySensorManager.registerListener(myAccelerometerListener, myAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
-
-        /*
         myGyroscopeListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -255,17 +312,14 @@ public class CollectingService extends Service {
             }
         };
         mySensorManager.registerListener(myGyroscopeListener, myGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-        */
+
     }
+    */
 
-
+    /*
     @SuppressLint("MissingPermission")
     private void getLocation() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
-
-       // mFusedLocationClient.requestLocationUpdates(LocationServices.getFusedLocationProviderClient(getApplicationContext()), 0, 0, mFusedLocationClient.registerListener(myListener));
-
-
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -293,4 +347,6 @@ public class CollectingService extends Service {
         //Log.i("BATTERY LEVEL", "" + batteryPercentage + "%");
         MainActivity.battery.setText("BATTERY LEVEL: " + batteryPercentage + "%");
     }
+
+     */
 }
