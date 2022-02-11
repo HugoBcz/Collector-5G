@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -23,9 +24,19 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,15 +68,43 @@ public class MainActivity extends AppCompatActivity {
     static TextView battery;
 
     //5G Collection
+    static TextView networkData;
+    static TextView rsrp;
+    static TextView rsrq;
     static TextView networkType;
-    static TextView cqiView;
-    static TextView rsrpView;
-    static TextView rsrqView;
+
+    private static MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        /*String clientId = MqttClient.generateClientId();
+        client = new MqttAndroidClient(this.getApplicationContext(), "tcp://broker.hivemq.com:1883", clientId);
+        //client = new MqttAndroidClient(this.getApplicationContext(), "mqtt://localhost:1883", clientId);
+        MqttConnectOptions options = new MqttConnectOptions();
+
+        try {
+            IMqttToken token = client.connect(options);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // We are connected
+                    Log.d("MQTTCONNECT", "Connect Success");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.d("MQTTCONNECT", "Connect Failure");
+
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }*/
 
         initComponent();
         getDeviceÌnfo();
@@ -76,11 +115,38 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                String clientId = MqttClient.generateClientId();
+                client = new MqttAndroidClient(getApplicationContext(), "tcp://broker.hivemq.com:1883", clientId);
+                //client = new MqttAndroidClient(this.getApplicationContext(), "mqtt://localhost:1883", clientId);
+                MqttConnectOptions options = new MqttConnectOptions();
+
+                try {
+                    IMqttToken token = client.connect(options);
+                    token.setActionCallback(new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            // We are connected
+                            Log.d("MQTTCONNECT", "Connect Success");
+                }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                            // Something went wrong e.g. connection timeout or firewall problems
+                            Log.d("MQTTCONNECT", "Connect Failure");
+
+                        }
+                    });
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+
                 Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 serviceIntent.setAction("start collecting service");
                 startService(serviceIntent);
 
             }
+
         });
 
         stopButton.setOnClickListener(new View.OnClickListener() {
@@ -89,6 +155,25 @@ public class MainActivity extends AppCompatActivity {
                 Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 serviceIntent.setAction("stop collecting service");
                 stopService(serviceIntent);
+
+                try {
+                    IMqttToken disconToken = client.disconnect();
+                    disconToken.setActionCallback(new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            Log.d("MQTTCONNECT", "Disconnect Success");
+                        }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken,
+                                              Throwable exception) {
+                            Log.d("MQTTCONNECT", "Disconnect Failure");
+                        }
+                    });
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+
             }
         });
     }
@@ -99,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         accel_y = findViewById(R.id.accel_y);
         accel_z = findViewById(R.id.accel_z);
 
+        Location = findViewById(R.id.Location);
         latitude =  findViewById(R.id.latitude);
         longitude = findViewById(R.id.longitude);
         altitude = findViewById(R.id.altitude);
@@ -109,16 +195,30 @@ public class MainActivity extends AppCompatActivity {
 
         battery = (TextView) findViewById(R.id.battery);
 
-        networkType = (TextView) findViewById(R.id.networkType);
-        cqiView = (TextView) findViewById(R.id.cqiView);
-        rsrpView = (TextView) findViewById(R.id.rsrpView);
-        rsrqView = (TextView) findViewById(R.id.rsrqView);
+        networkData = findViewById(R.id.networkData);
+        networkType = findViewById(R.id.networkType);
+        rsrp = findViewById(R.id.rsrp);
+        rsrq = findViewById(R.id.rsrq);
     }
 
     private void getDeviceÌnfo() {
         dn.setText(MANUFACTURER);
         dm.setText(MODEL);
         dv.setText("Android " + Build.VERSION.RELEASE);
+    }
+
+    public static void pub(JSONObject message) {
+        Log.d("MQTT","Publish");
+        String topic = "5Gcollection";
+        //String message = "First publish message";
+        byte[] encodedPayload = new byte[0];
+        try {
+            //encodedPayload = payload.getBytes("UTF-8");
+            //MqttMessage message = new MqttMessage(encodedPayload);
+            client.publish(topic, message.toString().getBytes(),0,false);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
 }
