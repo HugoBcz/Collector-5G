@@ -58,8 +58,9 @@ public class DataCollectionService extends Service {
     private Sensor myAccelerometer;
     private Sensor myGyroscope;
     private SensorEventListener myAccelerometerListener;
-    private SensorEventListener myGyroscopeListener;
+    //private SensorEventListener myGyroscopeListener;
     public static JSONObject json = new JSONObject();
+
     final Handler handler = new Handler();
 
     private Boolean bool = true;
@@ -90,6 +91,7 @@ public class DataCollectionService extends Service {
         MainActivity.networkData.setText("Network data : in progress...");
 
         try {
+            json.put("ID",StartActivity.id);
             getAllData();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -100,16 +102,11 @@ public class DataCollectionService extends Service {
             public void run() {
                 if(bool) {
                     Log.d("JSON",json.toString());
-                    handler.postDelayed(this, 5000);
+                    //StartActivity.pub(json);
+                    handler.postDelayed(this, StartActivity.delay*1000);
                 }
             }
-        }, 5000);
-
-        //Timer timer = new Timer();
-        //timer.schedule(new PublishJSON(), 0, 5000);
-
-        //Log.d("JSON",json.toString());
-        //MainActivity.pub(json);
+        }, StartActivity.delay*1000);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -119,7 +116,7 @@ public class DataCollectionService extends Service {
         bool = false;
 
         mySensorManager.unregisterListener(myAccelerometerListener);
-        mySensorManager.unregisterListener(myGyroscopeListener);
+        //mySensorManager.unregisterListener(myGyroscopeListener);
         mtelephonyManager.listen(myPhoneStateListener, PhoneStateListener.LISTEN_NONE);
 
         MainActivity.accel_data.setText("Accelerometer data : stopped");
@@ -207,65 +204,6 @@ public class DataCollectionService extends Service {
         myPhoneStateListener = new MyPhoneStateListener();
         mtelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mtelephonyManager.listen(myPhoneStateListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-
-        //TelephonyManager teleMan = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        //levelHw =5 ; primary=CellSignalStrengthNr/Lte
-        // COMMENT : When Integer.valueOf is not used, it return -140 by default , NOT SURE
-
-        /*String primaryCell = "";
-        int csiRsrp = 2147483647;
-        int csiRsrq = 2147483647;
-        int csiSinr = 2147483647;
-        int ssRsrp = 2147483647;
-        int ssRsrq = 2147483647;
-        int ssSinr = 2147483647;
-
-        SignalStrength sigStrength = teleMan.getSignalStrength();
-        String[] sigString = sigStrength.toString().split(",");
-        String nrString = sigString[5];
-        //Log.d("SIGSTRENGH",sigStrength.toString());
-
-        if (sigString[8].equals("primary=CellSignalStrengthLte}")) {
-            //Log.i("NETWORK", "You are connected to a 5G network");
-
-            Pattern pcsiRsrp = Pattern.compile("csiRsrp = ([^ ]*)");
-            Pattern pcsiRsrq = Pattern.compile("csiRsrq = ([^ ]*)");
-            Pattern pcsiSinr = Pattern.compile("csiSinr = ([^ ]*)");
-            Pattern pssRsrp = Pattern.compile("ssRsrp = ([^ ]*)");
-            Pattern pssRsrq = Pattern.compile("ssRsrq = ([^ ]*)");
-            Pattern pssSinr = Pattern.compile("ssSinr = ([^ ]*)");
-
-            Matcher mcsiRsrp = pcsiRsrp.matcher(nrString);
-            Matcher mcsiRsrq = pcsiRsrq.matcher(nrString);
-            Matcher mcsiSinr = pcsiSinr.matcher(nrString);
-            Matcher mssRsrp = pssRsrp.matcher(nrString);
-            Matcher mssRsrq = pssRsrq.matcher(nrString);
-            Matcher mssSinr = pssSinr.matcher(nrString);
-
-            if (mcsiRsrp.find() && mcsiRsrq.find() && mcsiSinr.find() && mssRsrp.find() && mssRsrq.find() && mssSinr.find()) {
-
-                //Log.i("NETWORK", "Input has been correctly parsed");
-                csiRsrp = Integer.valueOf(mcsiRsrp.group(1));
-                csiRsrq = Integer.valueOf(mcsiRsrq.group(1));
-                csiSinr = Integer.valueOf(mcsiSinr.group(1));
-                ssRsrp = Integer.valueOf(mssRsrp.group(1));
-                ssRsrq = Integer.valueOf(mssRsrq.group(1));
-                ssSinr = Integer.valueOf(mssSinr.group(1));
-
-                json.put("csiRsrp", csiRsrp);
-                json.put("csiRsrq", csiRsrq);
-                json.put("csiSinr", csiSinr);
-                json.put("ssRsrp", ssRsrp);
-                json.put("ssRsrq", ssRsrq);
-                json.put("ssSinr", ssSinr);
-
-                MainActivity.networkType.setText("You are connected to a 5G network");
-                MainActivity.rsrp.setText("SSRSRP : " + ssRsrp);
-                MainActivity.rsrq.setText("SSRSRq : " + ssRsrq);
-            }
-        } else {
-            Log.i("NETWORK", "You are not connected to a 5G network");
-        }*/
     }
 }
 
@@ -274,10 +212,13 @@ class MyPhoneStateListener extends PhoneStateListener {
     public void onSignalStrengthsChanged(SignalStrength signalStrength) {
         super.onSignalStrengthsChanged(signalStrength);
 
+        //levelHw =5 ; primary=CellSignalStrengthNr/Lte
+        // COMMENT : When Integer.valueOf is not used, it return -140 by default , NOT SURE
+
         String primaryCell = "";
-        int csiRsrp = 2147483647;
-        int csiRsrq = 2147483647;
-        int csiSinr = 2147483647;
+        //int csiRsrp = 2147483647;
+        //int csiRsrq = 2147483647;
+        //int csiSinr = 2147483647;
         int ssRsrp = 2147483647;
         int ssRsrq = 2147483647;
         int ssSinr = 2147483647;
@@ -288,34 +229,35 @@ class MyPhoneStateListener extends PhoneStateListener {
         if (sigString[8].equals("primary=CellSignalStrengthLte}")){
             //Log.i("NETWORK", "You are connected to a 5G network");
 
-            Pattern pcsiRsrp = Pattern.compile("csiRsrp = ([^ ]*)");
-            Pattern pcsiRsrq = Pattern.compile("csiRsrq = ([^ ]*)");
-            Pattern pcsiSinr = Pattern.compile("csiSinr = ([^ ]*)");
+            //Pattern pcsiRsrp = Pattern.compile("csiRsrp = ([^ ]*)");
+            //Pattern pcsiRsrq = Pattern.compile("csiRsrq = ([^ ]*)");
+            //Pattern pcsiSinr = Pattern.compile("csiSinr = ([^ ]*)");
             Pattern pssRsrp = Pattern.compile("ssRsrp = ([^ ]*)");
             Pattern pssRsrq = Pattern.compile("ssRsrq = ([^ ]*)");
             Pattern pssSinr = Pattern.compile("ssSinr = ([^ ]*)");
 
-            Matcher mcsiRsrp = pcsiRsrp.matcher(nrString);
-            Matcher mcsiRsrq = pcsiRsrq.matcher(nrString);
-            Matcher mcsiSinr = pcsiSinr.matcher(nrString);
+            //Matcher mcsiRsrp = pcsiRsrp.matcher(nrString);
+            //Matcher mcsiRsrq = pcsiRsrq.matcher(nrString);
+            //Matcher mcsiSinr = pcsiSinr.matcher(nrString);
             Matcher mssRsrp = pssRsrp.matcher(nrString);
             Matcher mssRsrq = pssRsrq.matcher(nrString);
             Matcher mssSinr = pssSinr.matcher(nrString);
 
-            if (mcsiRsrp.find() && mcsiRsrq.find() && mcsiSinr.find() && mssRsrp.find() && mssRsrq.find() && mssSinr.find()){
+            if (mssRsrp.find() && mssRsrq.find() && mssSinr.find()){
 
                 //Log.i("NETWORK", "Input has been correctly parsed");
-                csiRsrp =Integer.valueOf(mcsiRsrp.group(1));
-                csiRsrq =Integer.valueOf(mcsiRsrq.group(1));
-                csiSinr =Integer.valueOf(mcsiSinr.group(1));
+
+                //csiRsrp =Integer.valueOf(mcsiRsrp.group(1));
+                //csiRsrq =Integer.valueOf(mcsiRsrq.group(1));
+                //csiSinr =Integer.valueOf(mcsiSinr.group(1));
                 ssRsrp =Integer.valueOf(mssRsrp.group(1));
                 ssRsrq =Integer.valueOf(mssRsrq.group(1));
                 ssSinr =Integer.valueOf(mssSinr.group(1));
 
                 try {
-                    DataCollectionService.json.put("csiRsrp", csiRsrp);
-                    DataCollectionService.json.put("csiRsrq", csiRsrq);
-                    DataCollectionService.json.put("csiSinr", csiSinr);
+                    //DataCollectionService.json.put("csiRsrp", csiRsrp);
+                    //DataCollectionService.json.put("csiRsrq", csiRsrq);
+                    //DataCollectionService.json.put("csiSinr", csiSinr);
                     DataCollectionService.json.put("ssRsrp", ssRsrp);
                     DataCollectionService.json.put("ssRsrq", ssRsrq);
                     DataCollectionService.json.put("ssSinr", ssSinr);
@@ -333,9 +275,3 @@ class MyPhoneStateListener extends PhoneStateListener {
 
     }
 }
-
-/*class PublishJSON extends TimerTask {
-    public void run() {
-        Log.d("JSON",DataCollectionService.json.toString());
-    }
-}*/

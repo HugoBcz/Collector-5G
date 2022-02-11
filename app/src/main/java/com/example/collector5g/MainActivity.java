@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -73,73 +74,23 @@ public class MainActivity extends AppCompatActivity {
     static TextView rsrq;
     static TextView networkType;
 
-    private static MqttAndroidClient client;
+    //private static MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        /*String clientId = MqttClient.generateClientId();
-        client = new MqttAndroidClient(this.getApplicationContext(), "tcp://broker.hivemq.com:1883", clientId);
-        //client = new MqttAndroidClient(this.getApplicationContext(), "mqtt://localhost:1883", clientId);
-        MqttConnectOptions options = new MqttConnectOptions();
-
-        try {
-            IMqttToken token = client.connect(options);
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    // We are connected
-                    Log.d("MQTTCONNECT", "Connect Success");
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // Something went wrong e.g. connection timeout or firewall problems
-                    Log.d("MQTTCONNECT", "Connect Failure");
-
-                }
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }*/
-
         initComponent();
         getDeviceÌnfo();
 
         Button startButton = findViewById(R.id.startButton);
         Button stopButton = findViewById(R.id.stopButton);
+        Button disconnectButton = findViewById(R.id.disconnectButton);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                String clientId = MqttClient.generateClientId();
-                client = new MqttAndroidClient(getApplicationContext(), "tcp://broker.hivemq.com:1883", clientId);
-                //client = new MqttAndroidClient(this.getApplicationContext(), "mqtt://localhost:1883", clientId);
-                MqttConnectOptions options = new MqttConnectOptions();
-
-                try {
-                    IMqttToken token = client.connect(options);
-                    token.setActionCallback(new IMqttActionListener() {
-                        @Override
-                        public void onSuccess(IMqttToken asyncActionToken) {
-                            // We are connected
-                            Log.d("MQTTCONNECT", "Connect Success");
-                }
-
-                        @Override
-                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                            // Something went wrong e.g. connection timeout or firewall problems
-                            Log.d("MQTTCONNECT", "Connect Failure");
-
-                        }
-                    });
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
 
                 Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 serviceIntent.setAction("start collecting service");
@@ -156,24 +107,37 @@ public class MainActivity extends AppCompatActivity {
                 serviceIntent.setAction("stop collecting service");
                 stopService(serviceIntent);
 
+            }
+        });
+
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
+                serviceIntent.setAction("stop collecting service");
+                stopService(serviceIntent);
+
                 try {
-                    IMqttToken disconToken = client.disconnect();
+                    IMqttToken disconToken = StartActivity.client.disconnect();
                     disconToken.setActionCallback(new IMqttActionListener() {
                         @Override
                         public void onSuccess(IMqttToken asyncActionToken) {
                             Log.d("MQTTCONNECT", "Disconnect Success");
+                            Toast.makeText(getApplicationContext(),"Disconnect Success",Toast.LENGTH_SHORT).show();
+                            Intent activityIntent = new Intent(MainActivity.this, StartActivity.class);
+                            startActivity(activityIntent);
                         }
 
                         @Override
                         public void onFailure(IMqttToken asyncActionToken,
                                               Throwable exception) {
                             Log.d("MQTTCONNECT", "Disconnect Failure");
+                            Toast.makeText(getApplicationContext(),"Disconnect failure",Toast.LENGTH_SHORT).show();
                         }
                     });
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
-
             }
         });
     }
@@ -205,20 +169,6 @@ public class MainActivity extends AppCompatActivity {
         dn.setText(MANUFACTURER);
         dm.setText(MODEL);
         dv.setText("Android " + Build.VERSION.RELEASE);
-    }
-
-    public static void pub(JSONObject message) {
-        Log.d("MQTT","Publish");
-        String topic = "5Gcollection";
-        //String message = "First publish message";
-        byte[] encodedPayload = new byte[0];
-        try {
-            //encodedPayload = payload.getBytes("UTF-8");
-            //MqttMessage message = new MqttMessage(encodedPayload);
-            client.publish(topic, message.toString().getBytes(),0,false);
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
     }
 
 }
