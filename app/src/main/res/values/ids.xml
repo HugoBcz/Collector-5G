@@ -19,4 +19,6 @@
     <item name="networkType" type="id" />
     <item name="rsrp" type="id" />
     <item name="rsrq" type="id" />
+    <item name="networkData" type="id" />
+    <item name="constraintLayout2" type="id" />
 </resources>

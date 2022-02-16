@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
+    <!--<TextView
         android:id="@+id/gyros_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,196 +38,178 @@
         android:layout_height="wrap_content"
         android:text="@string/gyroscope_x"
         app:layout_constraintStart_toStartOf="@+id/gyros_data"
-        app:layout_constraintTop_toBottomOf="@+id/gyros_data" />
+        app:layout_constraintTop_toBottomOf="@+id/gyros_data" />-->
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
-        android:layout_width="206dp"
-        android:layout_height="127dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/startButton"
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="40dp" />
+
+        <TextView
+            android:id="@+id/dn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="60dp"
-            android:layout_marginBottom="50dp"
-            android:text="@string/start"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_marginStart="15dp"
+            android:text="@string/device_manufacturer" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout2"
-        android:layout_width="205dp"
-        android:layout_height="127dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="88dp"
+        <TextView
+            android:id="@+id/dv"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="60dp"
-            android:layout_marginBottom="50dp"
-            android:text="@string/stop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_marginStart="15dp"
+            android:text="@string/android_version" />
 
-    <TextView
-        android:id="@+id/latitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Latitude"
-        app:layout_constraintBottom_toTopOf="@+id/longitude"
-        app:layout_constraintStart_toStartOf="@+id/Location"
-        app:layout_constraintTop_toBottomOf="@+id/Location" />
+        <TextView
+            android:id="@+id/dm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/device_model" />
 
-    <TextView
-        android:id="@+id/Location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="25dp"
-        android:text="Location:"
-        app:layout_constraintBottom_toTopOf="@+id/latitude"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rsrq"
-        app:layout_constraintVertical_chainStyle="packed" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
 
-    <TextView
-        android:id="@+id/altitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Altitude"
-        app:layout_constraintBottom_toTopOf="@+id/accel_data"
-        app:layout_constraintStart_toStartOf="@+id/longitude"
-        app:layout_constraintTop_toBottomOf="@+id/longitude" />
+        <TextView
+            android:id="@+id/Location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Location:" />
 
-    <TextView
-        android:id="@+id/longitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Longitude"
-        app:layout_constraintBottom_toTopOf="@+id/altitude"
-        app:layout_constraintStart_toStartOf="@+id/latitude"
-        app:layout_constraintTop_toBottomOf="@+id/latitude" />
+        <TextView
+            android:id="@+id/latitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Latitude" />
 
-    <TextView
-        android:id="@+id/dn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/device_manufacturer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/longitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Longitude" />
 
-    <TextView
-        android:id="@+id/dm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/device_model"
-        app:layout_constraintStart_toEndOf="@+id/dn"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/altitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Altitude" />
 
-    <TextView
-        android:id="@+id/dv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/android_version"
-        app:layout_constraintStart_toEndOf="@+id/dm"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
 
-    <TextView
-        android:id="@+id/battery"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
-        android:text="@string/battery_level"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dn" />
+        <TextView
+            android:id="@+id/accel_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/accelerometer_data" />
 
-    <TextView
-        android:id="@+id/accel_data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="25dp"
-        android:text="@string/accelerometer_data"
-        app:layout_constraintBottom_toTopOf="@+id/accel_x"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/altitude" />
+        <TextView
+            android:id="@+id/accel_x"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/accelerometer_x" />
 
-    <TextView
-        android:id="@+id/accel_z"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/accelerometer_z"
-        app:layout_constraintBottom_toTopOf="@+id/gyros_data"
-        app:layout_constraintStart_toStartOf="@+id/accel_y"
-        app:layout_constraintTop_toBottomOf="@+id/accel_y" />
+        <TextView
+            android:id="@+id/accel_y"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/accelerometer_y" />
 
-    <TextView
-        android:id="@+id/accel_x"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/accelerometer_x"
-        app:layout_constraintBottom_toTopOf="@+id/accel_y"
-        app:layout_constraintStart_toStartOf="@+id/accel_data"
-        app:layout_constraintTop_toBottomOf="@+id/accel_data" />
+        <TextView
+            android:id="@+id/accel_z"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/accelerometer_z" />
 
-    <TextView
-        android:id="@+id/accel_y"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/accelerometer_y"
-        app:layout_constraintBottom_toTopOf="@+id/accel_z"
-        app:layout_constraintStart_toStartOf="@+id/accel_x"
-        app:layout_constraintTop_toBottomOf="@+id/accel_x" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
 
-    <TextView
-        android:id="@+id/networkType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Network type"
-        app:layout_constraintStart_toStartOf="@+id/networkData"
-        app:layout_constraintTop_toBottomOf="@+id/networkData" />
+        <TextView
+            android:id="@+id/networkData"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Network data :" />
 
-    <TextView
-        android:id="@+id/networkData"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="25dp"
-        android:text="Network data :"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/battery" />
+        <TextView
+            android:id="@+id/networkType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Network type" />
 
-    <TextView
-        android:id="@+id/rsrq"
-        android:layout_width="89dp"
-        android:layout_height="wrap_content"
-        android:text="RSRQ"
-        app:layout_constraintStart_toStartOf="@+id/rsrp"
-        app:layout_constraintTop_toBottomOf="@+id/rsrp" />
+        <TextView
+            android:id="@+id/rsrp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="RSRP" />
 
-    <TextView
-        android:id="@+id/rsrp"
-        android:layout_width="90dp"
-        android:layout_height="wrap_content"
-        android:text="RSRP"
-        app:layout_constraintStart_toStartOf="@+id/networkType"
-        app:layout_constraintTop_toBottomOf="@+id/networkType" />
+        <TextView
+            android:id="@+id/rsrq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="RSRQ" />
+
+        <TextView
+            android:id="@+id/battery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="@string/battery_level" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/startButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/start" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
+
+            <Button
+                android:id="@+id/stopButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/stop" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
+
+            <Button
+                android:id="@+id/disconnectButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disconnect" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

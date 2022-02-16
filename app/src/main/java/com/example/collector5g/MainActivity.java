@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -18,14 +19,25 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,16 +65,16 @@ public class MainActivity extends AppCompatActivity {
     static TextView gyros_y;
     static TextView gyros_z;
 
-    //network data
+    //battery display
+    static TextView battery;
+
+    //5G Collection
     static TextView networkData;
     static TextView rsrp;
     static TextView rsrq;
     static TextView networkType;
 
-    //battery display
-    static TextView battery;
-
-
+    //private static MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,23 +86,58 @@ public class MainActivity extends AppCompatActivity {
 
         Button startButton = findViewById(R.id.startButton);
         Button stopButton = findViewById(R.id.stopButton);
+        Button disconnectButton = findViewById(R.id.disconnectButton);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
+
+                Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 serviceIntent.setAction("start collecting service");
                 startService(serviceIntent);
 
-                }
+            }
+
         });
 
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent serviceIntent = new Intent(getApplicationContext(), CollectingService.class);
+                Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 serviceIntent.setAction("stop collecting service");
                 stopService(serviceIntent);
+
+            }
+        });
+
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
+                serviceIntent.setAction("stop collecting service");
+                stopService(serviceIntent);
+
+                try {
+                    IMqttToken disconToken = StartActivity.client.disconnect();
+                    disconToken.setActionCallback(new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            Log.d("MQTTCONNECT", "Disconnect Success");
+                            Toast.makeText(getApplicationContext(),"Disconnect Success",Toast.LENGTH_SHORT).show();
+                            Intent activityIntent = new Intent(MainActivity.this, StartActivity.class);
+                            startActivity(activityIntent);
+                        }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken,
+                                              Throwable exception) {
+                            Log.d("MQTTCONNECT", "Disconnect Failure");
+                            Toast.makeText(getApplicationContext(),"Disconnect failure",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -100,11 +147,6 @@ public class MainActivity extends AppCompatActivity {
         accel_x = findViewById(R.id.accel_x);
         accel_y = findViewById(R.id.accel_y);
         accel_z = findViewById(R.id.accel_z);
-
-        networkData = findViewById(R.id.networkData);
-        networkType = findViewById(R.id.networkType);
-        rsrp = findViewById(R.id.rsrp);
-        rsrq = findViewById(R.id.rsrq);
 
         Location = findViewById(R.id.Location);
         latitude =  findViewById(R.id.latitude);
@@ -116,6 +158,11 @@ public class MainActivity extends AppCompatActivity {
         dv = (TextView) findViewById(R.id.dv);
 
         battery = (TextView) findViewById(R.id.battery);
+
+        networkData = findViewById(R.id.networkData);
+        networkType = findViewById(R.id.networkType);
+        rsrp = findViewById(R.id.rsrp);
+        rsrq = findViewById(R.id.rsrq);
     }
 
     private void getDeviceÌnfo() {
