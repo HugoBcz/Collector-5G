@@ -1,7 +1,5 @@
 package com.example.collector5g;
 
-import static android.Manifest.*;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -12,38 +10,27 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
 import android.os.BatteryManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.telephony.CellSignalStrengthNr;
-import android.telephony.CellSignalStrength;
-import android.telephony.CellIdentityLte;
-import android.telephony.CellInfo;
-import android.telephony.CellInfoLte;
-import android.telephony.CellInfoNr;
+import android.os.Looper;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
-import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.ServiceCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,9 +38,12 @@ public class DataCollectionService extends Service {
     public DataCollectionService() {
     }
 
+    private boolean isstarted;
     private MyPhoneStateListener myPhoneStateListener;
     TelephonyManager mtelephonyManager;
     private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
     private SensorManager mySensorManager;
     private Sensor myAccelerometer;
     private Sensor myGyroscope;
@@ -62,6 +52,7 @@ public class DataCollectionService extends Service {
     public static JSONObject json = new JSONObject();
 
     final Handler handler = new Handler();
+    final Handler locHandler = new Handler();
 
     private Boolean bool = true;
 
@@ -74,24 +65,41 @@ public class DataCollectionService extends Service {
     @SuppressLint("NewApi")
     @Override
     public void onCreate() {
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mySensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         myAccelerometer = mySensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);  // excludes gravity, good for motion detection
         myGyroscope = mySensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                if (locationResult != null) {
+
+                    MainActivity.latitude.setText("Latitude : " + locationResult.getLastLocation().getLatitude() + " °N");
+                    MainActivity.longitude.setText("Longitude : " + locationResult.getLastLocation().getLongitude() + " °E");
+                    MainActivity.altitude.setText("Altitude : " + (int) (Math.round(locationResult.getLastLocation().getAltitude() * 100)) / 100.0 + " meters");
+                }
+            }
+        };
         super.onCreate();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("SERVICE","START ...");
+        boolean isstarted = true;
+        Log.i("SERVICE", "START ...");
 
         MainActivity.accel_data.setText("Accelerometer data : in progress...");
         MainActivity.Location.setText("Location : in progress...");
         MainActivity.networkData.setText("Network data : in progress...");
 
         try {
-            json.put("ID",StartActivity.id);
+            json.put("ID", StartActivity.id);
             getAllData();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -100,13 +108,13 @@ public class DataCollectionService extends Service {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(bool) {
-                    Log.d("JSON",json.toString());
+                if (bool) {
+                    Log.d("JSON", json.toString());
                     //StartActivity.pub(json);
-                    handler.postDelayed(this, StartActivity.delay*1000);
+                    handler.postDelayed(this, StartActivity.delay * 1000);
                 }
             }
-        }, StartActivity.delay*1000);
+        }, StartActivity.delay * 1000);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -139,6 +147,7 @@ public class DataCollectionService extends Service {
         // #########################################################################################
 
         // get location
+        /*
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -167,6 +176,24 @@ public class DataCollectionService extends Service {
                         }
                     }
                 });
+        */
+        locHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isstarted) {
+                    Log.d("JSON", json.toString());
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        return;
+                    }
+                    mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.getMainLooper());
+                    handler.postDelayed(this, 1000);
+                }
+            }
+        }, 1000);
+
+
 
         // #########################################################################################
 
