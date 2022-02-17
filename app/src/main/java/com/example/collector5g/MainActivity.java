@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
 
     static TextView rsrp;
     static TextView rsrq;
+    static TextView sinr;
     static TextView networkType;
 
-    //private static MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         Button stopButton = findViewById(R.id.stopButton);
         Button disconnectButton = findViewById(R.id.disconnectButton);
 
+        // implementation of 'start' button, starts DataCollectionService
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+        //implementation of 'stop' button, stops DataCollectionService
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // implementation of the 'disconnect' button, it stops the service and disconnects from the broker
         disconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -146,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // initialization of the components
     private void initComponent() {
         accel_data = findViewById(R.id.accel_data);
         accel_x = findViewById(R.id.accel_x);
@@ -167,8 +171,10 @@ public class MainActivity extends AppCompatActivity {
         networkType = findViewById(R.id.networkType);
         rsrp = findViewById(R.id.rsrp);
         rsrq = findViewById(R.id.rsrq);
+        sinr = findViewById(R.id.sinr);
     }
 
+    // get device info
     private void getDeviceÌnfo() {
         dn.setText(MANUFACTURER);
         dm.setText(MODEL);

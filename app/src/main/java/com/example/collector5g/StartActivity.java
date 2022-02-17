@@ -25,18 +25,21 @@ import org.json.JSONObject;
 
 public class StartActivity extends AppCompatActivity {
 
+    // EditText cells that are filled in by the user
     static EditText brokerAddress;
     static EditText username;
     static EditText password;
     static EditText period;
     static EditText topic;
 
+    // variables associated with the EditText cells
     private String address = "";
     private String user = "";
     private String passwd = "";
     static int delay = 5;
     static String tp = "";
 
+    // Mqtt client variables
     static MqttAndroidClient client;
     static String id;
 
@@ -48,6 +51,7 @@ public class StartActivity extends AppCompatActivity {
         Button launchButton = findViewById(R.id.launchButton);
         initComponent();
 
+        // ask for permissions
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[] { Manifest.permission.ACCESS_FINE_LOCATION },100);
@@ -63,6 +67,7 @@ public class StartActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                // associate the variables to the value defined by the user
                 address = brokerAddress.getText().toString();
                 user = username.getText().toString();
                 passwd = password.getText().toString();
@@ -76,15 +81,17 @@ public class StartActivity extends AppCompatActivity {
                 Intent activityIntent = new Intent(StartActivity.this, MainActivity.class);
                 startActivity(activityIntent);
 
+                // mqtt client parameters and options before connecting to the broker
                 String clientId = MqttClient.generateClientId();
                 id = clientId;
-                client = new MqttAndroidClient(getApplicationContext(), "tcp://broker.hivemq.com:1883", clientId);
+                client = new MqttAndroidClient(getApplicationContext(), address, clientId);
                 //client = new MqttAndroidClient(this.getApplicationContext(), "mqtt://localhost:1883", clientId);
 
                 MqttConnectOptions options = new MqttConnectOptions();
                 //options.setUserName(user);
                 //options.setPassword(passwd.toCharArray());
 
+                // connection to the broker
                 try {
                     IMqttToken token = client.connect(options);
                     token.setActionCallback(new IMqttActionListener() {
@@ -113,6 +120,7 @@ public class StartActivity extends AppCompatActivity {
         });
     }
 
+    // initialize the EditText components
     private void initComponent() {
         brokerAddress = findViewById(R.id.brokerAddress);
         username = findViewById(R.id.username);
@@ -121,15 +129,13 @@ public class StartActivity extends AppCompatActivity {
         topic = findViewById(R.id.topic);
     }
 
+    // publish the JSON object to the broker
     public static void pub(JSONObject message) {
         Log.d("MQTT","Publish");
         String topic = tp;
-        //String message = "First publish message";
         byte[] encodedPayload = new byte[0];
         try {
-            //encodedPayload = payload.getBytes("UTF-8");
-            //MqttMessage message = new MqttMessage(encodedPayload);
-            client.publish("5Gcollection", message.toString().getBytes(),0,false);
+            client.publish(topic, message.toString().getBytes(),0,false);
         } catch (MqttException e) {
             e.printStackTrace();
         }
