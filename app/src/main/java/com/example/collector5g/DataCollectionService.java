@@ -173,9 +173,17 @@ public class DataCollectionService extends Service {
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 if (locationResult != null) {
                     for (Location location : locationResult.getLocations()) {
-                        MainActivity.latitude.setText("Latitude : " + locationResult.getLastLocation().getLatitude() + " °N");
-                        MainActivity.longitude.setText("Longitude : " + locationResult.getLastLocation().getLongitude() + " °E");
-                        MainActivity.altitude.setText("Altitude : " + (int) (Math.round(locationResult.getLastLocation().getAltitude() * 100)) / 100.0 + " meters");
+                        MainActivity.latitude.setText("Latitude : " + location.getLatitude() + " °N");
+                        MainActivity.longitude.setText("Longitude : " + location.getLongitude() + " °E");
+                        MainActivity.altitude.setText("Altitude : " + (int) (Math.round(location.getAltitude() * 100)) / 100.0 + " meters");
+
+                        try {
+                            json.put("LATITUDE", location.getLatitude());
+                            json.put("LONGITUDE", location.getLongitude());
+                            json.put("ALTITUDE", (Math.round(location.getAltitude() * 100)) / 100.0);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
