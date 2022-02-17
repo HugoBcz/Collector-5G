@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
     //5G Collection
     static TextView networkData;
+
     static TextView rsrp;
     static TextView rsrq;
     static TextView networkType;
@@ -116,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
                 Intent serviceIntent = new Intent(getApplicationContext(), DataCollectionService.class);
                 serviceIntent.setAction("stop collecting service");
                 stopService(serviceIntent);
+
+                Intent activityIntent = new Intent(MainActivity.this, StartActivity.class);
+                startActivity(activityIntent);
 
                 try {
                     IMqttToken disconToken = StartActivity.client.disconnect();

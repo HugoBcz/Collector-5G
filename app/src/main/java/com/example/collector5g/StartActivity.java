@@ -1,8 +1,11 @@
 package com.example.collector5g;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -45,6 +48,17 @@ public class StartActivity extends AppCompatActivity {
         Button launchButton = findViewById(R.id.launchButton);
         initComponent();
 
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },100);
+            return;
+        }
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[] { Manifest.permission.READ_PHONE_STATE },100);
+            return;
+        }
+
         launchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -57,6 +71,10 @@ public class StartActivity extends AppCompatActivity {
                 if (!pd.equals("")) {
                     delay = Integer.valueOf(pd);
                 }
+
+                Toast.makeText(getApplicationContext(),"Connect Success",Toast.LENGTH_SHORT).show();
+                Intent activityIntent = new Intent(StartActivity.this, MainActivity.class);
+                startActivity(activityIntent);
 
                 String clientId = MqttClient.generateClientId();
                 id = clientId;

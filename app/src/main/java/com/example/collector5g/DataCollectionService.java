@@ -102,7 +102,7 @@ public class DataCollectionService extends Service {
             public void run() {
                 if(bool) {
                     Log.d("JSON",json.toString());
-                    //StartActivity.pub(json);
+                    StartActivity.pub(json);
                     handler.postDelayed(this, StartActivity.delay*1000);
                 }
             }
@@ -195,7 +195,7 @@ public class DataCollectionService extends Service {
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
             }
         };
-        mySensorManager.registerListener(myAccelerometerListener, myAccelerometer, 500);
+        mySensorManager.registerListener(myAccelerometerListener, myAccelerometer, 100000);
 
         // #########################################################################################
 
@@ -212,9 +212,6 @@ class MyPhoneStateListener extends PhoneStateListener {
     public void onSignalStrengthsChanged(SignalStrength signalStrength) {
         super.onSignalStrengthsChanged(signalStrength);
 
-        //levelHw =5 ; primary=CellSignalStrengthNr/Lte
-        // COMMENT : When Integer.valueOf is not used, it return -140 by default , NOT SURE
-
         String primaryCell = "";
         //int csiRsrp = 2147483647;
         //int csiRsrq = 2147483647;
@@ -225,8 +222,9 @@ class MyPhoneStateListener extends PhoneStateListener {
 
         String[] sigString = signalStrength.toString().split(",");
         String nrString = sigString[5];
+        Log.d("TAG",signalStrength.toString());
 
-        if (sigString[8].equals("primary=CellSignalStrengthLte}")){
+        if (sigString[6].equals("primary=CellSignalStrengthNr}")){
             //Log.i("NETWORK", "You are connected to a 5G network");
 
             //Pattern pcsiRsrp = Pattern.compile("csiRsrp = ([^ ]*)");
