@@ -29,11 +29,15 @@ import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ServiceCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -51,9 +55,12 @@ public class DataCollectionService extends Service {
     public DataCollectionService() {
     }
 
+    private boolean isstarted;
     private MyPhoneStateListener myPhoneStateListener;
     TelephonyManager mtelephonyManager;
     private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
     private SensorManager mySensorManager;
     private Sensor myAccelerometer;
     private Sensor myGyroscope;
@@ -139,7 +146,7 @@ public class DataCollectionService extends Service {
         // #########################################################################################
 
         // get location
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        /*mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -166,11 +173,38 @@ public class DataCollectionService extends Service {
                             MainActivity.Location.setText("Location : no last known location found");
                         }
                     }
-                });
+                });*/
+
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setInterval(1000); // interval between two requests
+        mLocationRequest.setFastestInterval(10); // minimum interval
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                if (locationResult != null) {
+                    for (Location location : locationResult.getLocations()) {
+                        MainActivity.latitude.setText("Latitude : " + location.getLatitude() + " °N");
+                        MainActivity.longitude.setText("Longitude : " + location.getLongitude() + " °E");
+                        MainActivity.altitude.setText("Altitude : " + (int) (Math.round(location.getAltitude() * 100)) / 100.0 + " meters");
+
+                        try {
+                            json.put("LATITUDE", location.getLatitude());
+                            json.put("LONGITUDE", location.getLongitude());
+                            json.put("ALTITUDE", (Math.round(location.getAltitude() * 100)) / 100.0);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
 
         // #########################################################################################
 
         // get mobility
+        //retrieve accelerometer data
         myAccelerometerListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -200,7 +234,7 @@ public class DataCollectionService extends Service {
         // #########################################################################################
 
         // get network data
-
+        // instanciate the telephony manager and phone state listener used to collect the network data
         myPhoneStateListener = new MyPhoneStateListener();
         mtelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mtelephonyManager.listen(myPhoneStateListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
@@ -224,8 +258,11 @@ class MyPhoneStateListener extends PhoneStateListener {
         String nrString = sigString[5];
         Log.d("TAG",signalStrength.toString());
 
+        // check if the user is connected to a 5G network
         if (sigString[6].equals("primary=CellSignalStrengthNr}")){
             //Log.i("NETWORK", "You are connected to a 5G network");
+
+            // get all data about 5G connectivity
 
             //Pattern pcsiRsrp = Pattern.compile("csiRsrp = ([^ ]*)");
             //Pattern pcsiRsrq = Pattern.compile("csiRsrq = ([^ ]*)");
@@ -265,7 +302,8 @@ class MyPhoneStateListener extends PhoneStateListener {
 
                 MainActivity.networkType.setText("You are connected to a 5G network");
                 MainActivity.rsrp.setText("SSRSRP : " + ssRsrp);
-                MainActivity.rsrq.setText("SSRSRq : " + ssRsrq);
+                MainActivity.rsrq.setText("SSRSRQ : " + ssRsrq);
+                MainActivity.sinr.setText("SINR : " + ssSinr);
             }
         } else {
             Log.i("NETWORK", "You are not connected to a 5G network");
