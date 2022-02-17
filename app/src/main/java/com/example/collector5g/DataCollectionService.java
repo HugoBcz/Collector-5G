@@ -280,7 +280,7 @@ class MyPhoneStateListener extends PhoneStateListener {
 
             if (mssRsrp.find() && mssRsrq.find() && mssSinr.find()){
 
-                //Log.i("NETWORK", "Input has been correctly parsed");
+                //Log.i("NETWORK", "Input has been correctly parsed")     ;
 
                 //csiRsrp =Integer.valueOf(mcsiRsrp.group(1));
                 //csiRsrq =Integer.valueOf(mcsiRsrq.group(1));
