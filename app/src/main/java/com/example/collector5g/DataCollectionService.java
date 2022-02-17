@@ -1,15 +1,14 @@
 package com.example.collector5g;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,7 +19,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -70,22 +68,7 @@ public class DataCollectionService extends Service {
         myAccelerometer = mySensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);  // excludes gravity, good for motion detection
         myGyroscope = mySensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-        mLocationRequest = LocationRequest.create();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(500);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                if (locationResult != null) {
-
-                    MainActivity.latitude.setText("Latitude : " + locationResult.getLastLocation().getLatitude() + " °N");
-                    MainActivity.longitude.setText("Longitude : " + locationResult.getLastLocation().getLongitude() + " °E");
-                    MainActivity.altitude.setText("Altitude : " + (int) (Math.round(locationResult.getLastLocation().getAltitude() * 100)) / 100.0 + " meters");
-                }
-            }
-        };
         super.onCreate();
     }
 
@@ -134,6 +117,7 @@ public class DataCollectionService extends Service {
         super.onDestroy();
     }
 
+    @SuppressLint("MissingPermission")
     public void getAllData() throws JSONException {
 
         // get battery level
@@ -177,27 +161,36 @@ public class DataCollectionService extends Service {
                     }
                 });
         */
-        locHandler.postDelayed(new Runnable() {
+
+        // get location information
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setInterval(1000); // interval between two requests
+        mLocationRequest.setFastestInterval(10); // minimum interval
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        mLocationCallback = new LocationCallback() {
             @Override
-            public void run() {
-                if (isstarted) {
-                    Log.d("JSON", json.toString());
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        return;
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                if (locationResult != null) {
+                    for (Location location : locationResult.getLocations()) {
+                        MainActivity.latitude.setText("Latitude : " + locationResult.getLastLocation().getLatitude() + " °N");
+                        MainActivity.longitude.setText("Longitude : " + locationResult.getLastLocation().getLongitude() + " °E");
+                        MainActivity.altitude.setText("Altitude : " + (int) (Math.round(locationResult.getLastLocation().getAltitude() * 100)) / 100.0 + " meters");
                     }
-                    mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.getMainLooper());
-                    handler.postDelayed(this, 1000);
                 }
             }
-        }, 1000);
+        };
+
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.getMainLooper());
+
+
 
 
 
         // #########################################################################################
 
         // get mobility
+        //retrieve accelerometer data
         myAccelerometerListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -214,7 +207,6 @@ public class DataCollectionService extends Service {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
 
@@ -222,18 +214,22 @@ public class DataCollectionService extends Service {
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
             }
         };
-        mySensorManager.registerListener(myAccelerometerListener, myAccelerometer, 500);
+        mySensorManager.registerListener(myAccelerometerListener, myAccelerometer, 1000000);
+
+        // retrieve gyroscope data (not working yet)
+
 
         // #########################################################################################
 
-        // get network data
 
+        // instanciate the telephony manager and phone state listener used to collect the network data
         myPhoneStateListener = new MyPhoneStateListener();
         mtelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mtelephonyManager.listen(myPhoneStateListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
     }
 }
 
+// class used to get the network data
 class MyPhoneStateListener extends PhoneStateListener {
 
     public void onSignalStrengthsChanged(SignalStrength signalStrength) {

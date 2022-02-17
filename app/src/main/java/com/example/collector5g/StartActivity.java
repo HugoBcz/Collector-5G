@@ -21,19 +21,21 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONObject;
 
 public class StartActivity extends AppCompatActivity {
-
+    // EditText cells that are filled in by the user
     static EditText brokerAddress;
     static EditText username;
     static EditText password;
     static EditText period;
     static EditText topic;
 
+    // variables associated with the EditText cells
     private String address = "";
     private String user = "";
     private String passwd = "";
     static int delay = 5;
     static String tp = "";
 
+    // Mqtt client variables
     static MqttAndroidClient client;
     static String id;
 
@@ -48,7 +50,7 @@ public class StartActivity extends AppCompatActivity {
         launchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                // associate the variables to the value defined by the user
                 address = brokerAddress.getText().toString();
                 user = username.getText().toString();
                 passwd = password.getText().toString();
@@ -58,6 +60,7 @@ public class StartActivity extends AppCompatActivity {
                     delay = Integer.valueOf(pd);
                 }
 
+                // mqtt client parameters and options before connecting to the broker
                 String clientId = MqttClient.generateClientId();
                 id = clientId;
                 client = new MqttAndroidClient(getApplicationContext(), "tcp://broker.hivemq.com:1883", clientId);
@@ -67,6 +70,7 @@ public class StartActivity extends AppCompatActivity {
                 //options.setUserName(user);
                 //options.setPassword(passwd.toCharArray());
 
+                // connection to the broker
                 try {
                     IMqttToken token = client.connect(options);
                     token.setActionCallback(new IMqttActionListener() {
@@ -95,6 +99,7 @@ public class StartActivity extends AppCompatActivity {
         });
     }
 
+    // initialize the EditText components
     private void initComponent() {
         brokerAddress = findViewById(R.id.brokerAddress);
         username = findViewById(R.id.username);
@@ -103,6 +108,7 @@ public class StartActivity extends AppCompatActivity {
         topic = findViewById(R.id.topic);
     }
 
+    // publish the JSON object to the broker
     public static void pub(JSONObject message) {
         Log.d("MQTT","Publish");
         String topic = tp;
