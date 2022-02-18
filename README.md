@@ -26,11 +26,11 @@ This application is composed of two activity and an only one service :
 - StartActivity is the launch activity (activity that open at launch time), it presents a form and a button. The form is designed to ask information about which broker the user want to share his personal data. So with the broker address, the form also asks for a potential username, password, a topic name and also a delay of collection (The broker collects every x seconds). The button start the connection with the broker and launch the second activity, MainActivity.
 - MainActivity is the second activity, it presents a list of incolumn textViews and three buttons. The textViews are used to display the informations so the user knows the value of the data that are collected. The button start launch DataCollectionService, the button stop pause the service and the button disconnect stop the connection with the broker and redirect the user to StartActivity.
 - DataCollectionService collect all the needed data with method getAllData. It diplays on the screen the information and sends it every x second to the broker.
-![StartActivity](https://user-images.githubusercontent.com/57664921/154371073-c47df023-74a8-4d37-b31e-097996bbc763.png)
-![MainActivity](https://user-images.githubusercontent.com/57664921/154371088-8ca6d96e-b674-421c-b90b-782a557bd214.png)
+![StartActivity](https://user-images.githubusercontent.com/57664921/154371073-c47df023-74a8-4d37-b31e-097996bbc763.png){ width: 200px; }
+![MainActivity](https://user-images.githubusercontent.com/57664921/154371088-8ca6d96e-b674-421c-b90b-782a557bd214.png){ width: 200px; }
 ## Improvements
 Several improvements could be add to the application :
 1. Add security layer and code obfuscation
-2. Implement a fucntional gyroscope in DataCollectionService
+2. Implement a functional gyroscope in DataCollectionService
 3. Adapt the application for Non-Standalone 5G connection
 4. Create a beautiful GUI
